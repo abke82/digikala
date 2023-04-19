@@ -16,7 +16,6 @@ public class Main implements Serializable {
             e.printStackTrace();
         }
     }
-
     public static Object load(String fileName) throws IOException, ClassNotFoundException{
         Object obj = null;
         try{
