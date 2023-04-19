@@ -1,10 +1,9 @@
 package org.example;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Product  extends SubCategory implements Serializable {
+public class Product extends SubCategory implements Serializable {
     private String name, category, subcategory;
     private String company;
     private int quantity;
@@ -39,6 +38,24 @@ public class Product  extends SubCategory implements Serializable {
     public String getCompany() {
         return company;
     }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public String getSubcategory() {
+        return subcategory;
+    }
+
+    public float getPrice() {
+        return price;
+    }
+
+    public HashMap<String, String> getDetaile() {
+        return detaile;
+    }
+
+    public void addComment(String comment){ comments.add(comment);}
 
     @Override
     public String toString() {

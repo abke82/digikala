@@ -41,7 +41,7 @@ public class Main implements Serializable {
         Scanner in = new Scanner(System.in);
         Shop digiKala = new Shop("digi kala","www.digikala.com","02133333333");
 
-        //digiKala = (Shop) load("save.txt");
+        digiKala = (Shop) load("save.txt");
 
 
         while (true) {
@@ -69,7 +69,7 @@ public class Main implements Serializable {
                                 String address = digiKala.getUserAddress(username);
                                 float wallet = digiKala.getUserWallet(username);
                                 System.out.println("Username: "+username+", Email: "+email+", Phone: "+phone+", Address: "+address+", Wallet: "+wallet);
-                                System.out.print("1.Money Requeste\n2.Edit your information\n3.List of product\n4.Shopping cart\n5.Orders\n6.List of purchased products\n7.Log out\n->");
+                                System.out.print("1.Money Requeste\n2.Edit your information\n3.List of product\n4.Shopping cart\n5.Order shopping cart to buy\n6.List of purchased products\n7.Add comment to product\n8.Log out\n->");
                                 order = in.nextLine();
 
                                 //money Requeste
@@ -135,7 +135,8 @@ public class Main implements Serializable {
                                             System.out.println("We don't have this product.");
                                             continue;
                                         }
-                                        System.out.print("Enter the quantity of the requested product\n->");
+
+                                        System.out.print("How many "+productname+" do you want to have?\n->");
                                         int requrstedQuantity =0;
                                         try {
                                             requrstedQuantity = in.nextInt();
@@ -149,10 +150,9 @@ public class Main implements Serializable {
                                             System.out.println("We don't have that many products.");
                                             continue;
                                         }
-
-                                        Product a= digiKala.getProductByName(productname);
-                                        a.setQuantity(requrstedQuantity);
-                                        digiKala.addToShoppingCart(username,a);
+                                        Product a =digiKala.getProductByName(productname);
+                                        Product foo = new Product(a.getName(),a.getCategory(),a.getSubcategory(),a.getCompany(),requrstedQuantity,a.getPrice(),a.getDetaile());
+                                        digiKala.addToShoppingCart(username,foo);
                                         digiKala.decreaseQuanttiy(productname,requrstedQuantity);
                                     }
 
@@ -165,7 +165,7 @@ public class Main implements Serializable {
                                             System.out.println("We don't have this product.");
                                             continue;
                                         }
-                                        System.out.print("How many products do you want to remove\n->");
+                                        System.out.print("How many "+productname+" do you want to remove?\n->");
                                         int requrstedQuantity =0;
                                         try {
                                             requrstedQuantity = in.nextInt();
@@ -175,15 +175,15 @@ public class Main implements Serializable {
                                         }
                                         in.nextLine();
 
-                                        int x = digiKala.getQuantityOfsellerProduct(productname);
+                                        int x = digiKala.getQuantityCart(username,productname);
                                         if(requrstedQuantity > x){
                                             System.out.println("You don't have that many products in your cart.");
                                             continue;
                                         }
-
-                                        Product a= digiKala.getProductByName(productname);
-                                        a.setQuantity(x - requrstedQuantity);
-                                        digiKala.addToShoppingCart(username,a);// ffffffffffff
+                                        Product a =digiKala.getProductByName(productname);
+                                        Product foo = new Product(a.getName(),a.getCategory(),a.getSubcategory(),a.getCompany(),x - requrstedQuantity,a.getPrice(),a.getDetaile());
+                                        digiKala.removeShoppingCart(username,productname);
+                                        digiKala.addToShoppingCart(username,foo);
                                         digiKala.increaseQuanttiy(productname,requrstedQuantity);
 
                                     }
@@ -192,17 +192,36 @@ public class Main implements Serializable {
 
                                 //order
                                 else if (order.equals("5")) {
-
+                                    if (digiKala.sumOfPrice(username) > wallet){
+                                        System.out.println("You don't have enough money.");
+                                        continue;
+                                    }
+                                    System.out.println("After admin approval, the purchase is final.");
+                                    digiKala.RequestOrdeer(username);
                                 }
 
                                 //purchased product
                                 else if (order.equals("6")) {
-
+                                    System.out.println(digiKala.getOrders(username));
                                 }
 
+                                //add comment
+                                else if (order.equals("7")) {
+                                    System.out.print("Enter name of product that you  want to comment.\n->");
+                                    String prductName = in.nextLine();
+                                    if (!digiKala.doesProductExist(prductName)) {
+                                        System.out.println("This product does not exist");
+                                    }
+                                    else{
+                                        System.out.print("Enter your comment\n->");
+                                        String comment =username +": "+ in.nextLine();
+
+                                        digiKala.addComment(prductName, comment);
+                                    }
+                                }
 
                                 //log out
-                                else if(order.equals("7")) break;
+                                else if(order.equals("8")) break;
 
                                 else System.out.println("Wrong order");
                             }
@@ -250,7 +269,7 @@ public class Main implements Serializable {
                         while (true){
                             String email1 = digiKala.getAdminEmail(username);
                             System.out.println("Username: "+username+", Email: "+email1);
-                            System.out.print("1.Add admin\n2.List of users\n3.Money request\n4.Seller request\n5.List of product\n6.Log out\n->");
+                            System.out.print("1.Add admin\n2.List of users\n3.Money request\n4.Seller request\n5.Order request\n6.List of product\n7.List of orders\n8.Log out\n->");
                             order = in.nextLine();
 
                             //add admin
@@ -317,13 +336,42 @@ public class Main implements Serializable {
                                 else System.out.println("Wrong order");
                             }
 
-                            //list of product
+                            //order request
                             else if(order.equals("5")){
+                                System.out.print("1.print request\n2.accept request\n->");
+                                order = in.nextLine();
+
+                                if (order.equals("1")) digiKala.printOrderRequesteds();
+
+                                else if (order.equals("2")){
+                                    System.out.print("Inter number of request that you want to accept\n->");
+                                    int i =0;
+                                    try {
+                                        i = in.nextInt();
+                                    }
+                                    catch (InputMismatchException e){
+                                        System.out.println("You should enter number");
+                                    }
+                                    in.nextLine();
+                                    digiKala.confirmOrder(i);
+                                }
+
+                                else System.out.println("Wrong order");
+                            }
+
+
+                            //list of product
+                            else if(order.equals("6")){
                                 digiKala.printProduct();
                             }
 
+                            //list of order
+                            else if(order.equals("7")){
+                                digiKala.printOrders();
+                            }
+
                             //log out
-                            else if(order.equals("6")){
+                            else if(order.equals("8")){
                                 break;
                             }
                             else System.out.println("Wrong order");

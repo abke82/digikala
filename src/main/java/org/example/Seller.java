@@ -5,7 +5,7 @@ import java.util.HashMap;
 public class Seller implements Serializable {
     private String company, password;
     private HashMap<String,Product> availableProducts;
-    private double wallet;
+    private float wallet;
 
     public Seller(String company, String password) {
         this.company = company;
@@ -24,14 +24,14 @@ public class Seller implements Serializable {
         System.out.println(availableProducts);
     }
 
-    public int getQuantityAvailableProducts(String productName){
-        return availableProducts.get(productName).getQuantity();
-    }
     public void setAvailableProducts(String productName, int i){
         availableProducts.get(productName).setQuantity(i);
     }
-
-    public double getWallet() {
+    public float getWallet() {
         return wallet;
+    }
+
+    public void addWallet(float wallet) {
+        this.wallet += wallet;
     }
 }

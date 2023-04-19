@@ -1,13 +1,13 @@
 package org.example;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+
 public class User implements Serializable {
-    //coment to product, order va mokhalafat
     private String username, password, email, phone, address;
     private float wallet;
-    private ArrayList <Product> shoppingCart;
-    private ArrayList <Product> orders;
-    private ArrayList <Product> purchasedProducts;
+    private HashMap<String,Product> shoppingCart;
+    private ArrayList <Order> orders;
     private float moneyRequested;
 
     public User(String username, String password, String email, String phone, String address) {
@@ -16,9 +16,8 @@ public class User implements Serializable {
         this.email = email;
         this.phone = phone;
         this.address = address;
-        this.shoppingCart = new ArrayList<>();
+        this.shoppingCart = new HashMap<>();
         this.orders = new ArrayList<>();
-        this.purchasedProducts = new ArrayList<>();
         this.wallet=0;
     }
 
@@ -54,6 +53,10 @@ public class User implements Serializable {
         return wallet;
     }
 
+    public void setWallet(float wallet) {
+        this.wallet = wallet;
+    }
+
     public float getMoneyRequested() {
         return moneyRequested;
     }
@@ -71,29 +74,32 @@ public class User implements Serializable {
         return false;
     }
 
-    public ArrayList<Product> getShoppingCart() {
+    public int getQ(String productName){
+        return shoppingCart.get(productName).getQuantity();
+    }
+    public HashMap<String,Product> getShoppingCart() {
         return shoppingCart;
     }
 
-    public void addShoppingCart(Product product) {
-        this.shoppingCart.add(product);
+    public void setShoppingCart(HashMap<String, Product> shoppingCart) {
+        this.shoppingCart = shoppingCart;
     }
 
-    public ArrayList<Product> getOrders() {
+    public void addShoppingCart(Product product) {
+        this.shoppingCart.put(product.getName(),product);
+    }
+    public void removeFromCart(String productname){
+        this.shoppingCart.remove(productname);
+    }
+
+    public void addOrder(Order order){
+        orders.add(order);
+    }
+
+    public ArrayList<Order> getOrders() {
         return orders;
     }
 
-    public void setOrders(ArrayList<Product> orders) {
-        this.orders = orders;
-    }
-
-    public ArrayList<Product> getPurchasedProducts() {
-        return purchasedProducts;
-    }
-
-    public void setPurchasedProducts(ArrayList<Product> purchasedProducts) {
-        this.purchasedProducts = purchasedProducts;
-    }
 
     @Override
     public String toString() {
@@ -106,7 +112,6 @@ public class User implements Serializable {
                 ", wallet=" + wallet +
                 ", shoppingCart=" + shoppingCart +
                 ", orders=" + orders +
-                ", purchasedProducts=" + purchasedProducts +
                 ", moneyRequested=" + moneyRequested +
                 '}';
     }

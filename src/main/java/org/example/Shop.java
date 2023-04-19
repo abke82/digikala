@@ -2,10 +2,13 @@ package org.example;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Date;
+import java.util.Objects;
 
 public class Shop implements Serializable {
     private String name, webAddress, phoneNum;
-    private double profit;
+    private float profit;
     private HashMap<String,User> users;
     private HashMap<String,Admin> admins;
     private HashMap<String,Seller> sellers;
@@ -14,6 +17,8 @@ public class Shop implements Serializable {
     private HashMap <String,Product> products;
     private HashMap <String,Category> categories;
     private HashMap<String,SubCategory> subCategories;
+    private ArrayList<Order> orders;
+    private HashMap<String,User> orderRequest;
 
     public Shop(String name, String webAddress, String phoneNum) {
         this.name = name;
@@ -23,10 +28,12 @@ public class Shop implements Serializable {
         this.admins = new HashMap<>();
         this.sellers = new HashMap<>();
         this.moneyRequesteds = new HashMap<>();
-        this.sellerRequest= new HashMap<>();
-        this.categories= new HashMap<>();
+        this.sellerRequest = new HashMap<>();
+        this.categories = new HashMap<>();
         this.subCategories = new HashMap<>();
         this.products = new HashMap<>();
+        this.orders = new ArrayList<>();
+        this.orderRequest = new HashMap<>();
 
         profit=0;
         Admin admin = new Admin("admin","admin","admin@gmail.com");
@@ -38,15 +45,21 @@ public class Shop implements Serializable {
     public void printProduct(){
         System.out.println(products);
     }
+    public void printOrders(){
+        System.out.println(orders);
+    }
     public boolean doesProductExist(String name){
         return products.containsKey(name);
     }
     public int getQuantity (String productname){ return products.get(productname).getQuantity();}
-    public void addToShoppingCart(String username, Product product){
-        users.get(username).addShoppingCart(product);
+    public void addToShoppingCart(String usernam, Product product){
+        users.get(usernam).addShoppingCart(product);
     }
-    public void decreaseQuanttiy(String productName,int i){
-        int x = products.get(productName).getQuantity()-i;
+    public void removeShoppingCart(String usernam, String productName){
+        users.get(usernam).removeFromCart(productName);
+    }
+    public void decreaseQuanttiy(String productName,int requrstedQuantity){
+        int x = products.get(productName).getQuantity() - requrstedQuantity;
         products.get(productName).setQuantity(x);
         String company = products.get(productName).getCompany();
         sellers.get(company).setAvailableProducts(productName,x);
@@ -60,9 +73,22 @@ public class Shop implements Serializable {
     public Product getProductByName(String producName){
         return products.get(producName);
     }
-    public int getQuantityOfsellerProduct(String productName){
-        String company = products.get(productName).getCompany();
-        return sellers.get(company).getQuantityAvailableProducts(productName);
+    public int getQuantityCart(String usernam,String productName){
+        return users.get(usernam).getQ(productName);
+    }
+
+    public float sumOfPrice(String username){
+        float sum=0;
+        for (Map.Entry<String, Product> set : users.get(username).getShoppingCart().entrySet()) {
+            sum += set.getValue().getPrice();
+        }
+        return sum;
+    }
+    public String getSeller(HashMap<String,Product> v){
+        for (Map.Entry<String, Product> set : v.entrySet()) {
+             return set.getValue().getCompany();
+        }
+        return "";
     }
 
 
@@ -75,6 +101,40 @@ public class Shop implements Serializable {
     public boolean doesAdminExist(String username){
         return admins.containsKey(username);
     }
+    public void printOrderRequesteds(){
+        int i =1;
+        for (String name: orderRequest.keySet()) {
+
+            String key = name.toString();
+            HashMap<String,Product> value = orderRequest.get(name).getShoppingCart();
+            System.out.println(i +"-"+ key + "=" + value);
+            i++;
+        }
+    }
+
+    public void confirmOrder(int i){
+        int j=0;
+        for (String name: orderRequest.keySet()) {
+            j++;
+            if(j==i){
+                 float sumOfPrice = sumOfPrice(name);
+                float x = users.get(name).getWallet() - sumOfPrice;
+                users.get(name).setWallet(x);
+                profit += sumOfPrice/10;
+                String seller=getSeller(users.get(name).getShoppingCart());
+                sellers.get(seller).addWallet(sumOfPrice*9 /10);
+                Date d = new Date();
+                Order order = new Order(sumOfPrice,name,seller,d,users.get(name).getShoppingCart());
+                orders.add(order);
+                users.get(name).addOrder(order);
+                users.get(name).setShoppingCart(null);
+                orderRequest.remove(name);
+                break;
+            }
+        }
+    }
+
+
     public void printMonyRequesteds(){
         int i =1;
         for (String name: moneyRequesteds.keySet()) {
@@ -167,6 +227,9 @@ public class Shop implements Serializable {
         users.get(name).setMoneyRequested(size);
         moneyRequesteds.put(name,users.get(name));
     }
+    public void RequestOrdeer(String name){
+        orderRequest.put(name,users.get(name));
+    }
 
     public void addUser(String username,String pass,String email, String phone, String address){
         User user=new User(username,pass,email,phone,address);
@@ -211,10 +274,15 @@ public class Shop implements Serializable {
         return users.get(name).getWallet();
     }
 
-    public ArrayList<Product> getShoppingCart(String name) {
-        return users.get(name).getShoppingCart();
+    public HashMap getShoppingCart(String username) {
+        return users.get(username).getShoppingCart();
     }
 
-
+    public ArrayList<Order> getOrders(String username) {
+        return users.get(username).getOrders();
+    }
+    public void addComment(String productName, String comment){
+        products.get(productName).addComment(comment);
+    }
 
 }
